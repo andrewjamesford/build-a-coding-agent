@@ -1,7 +1,7 @@
 // main.ts
 import Anthropic from "@anthropic-ai/sdk";
 import { createInterface } from "node:readline/promises";
-import { listFilesTool, readFileTool, type ToolDefinition } from "./tools.ts";
+import { editFileTool, listFilesTool, readFileTool, type ToolDefinition } from "./tools.ts";
 
 type Message = Anthropic.Message;
 type MessageParam = Anthropic.MessageParam;
@@ -113,7 +113,7 @@ async function main() {
     }
   };
 
-  const tools = [readFileTool, listFilesTool];
+  const tools = [readFileTool, listFilesTool, editFileTool];
   const agent = new Agent(client, getUserMessage, tools);
 
   try {
