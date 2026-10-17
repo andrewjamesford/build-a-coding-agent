@@ -1,6 +1,7 @@
 // tools.ts
 import type Anthropic from "@anthropic-ai/sdk";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 
 // A tool is a name, a description, a JSON schema for its input,
 // and the function that actually does the work.
@@ -24,4 +25,29 @@ export const readFileTool: ToolDefinition = {
     additionalProperties: false,
   },
   run: async (input) => readFile(String(input.path), "utf8"),
+};
+
+export const listFilesTool: ToolDefinition = {
+  name: "list_files",
+  description:
+    "List every file and directory under a path, recursively. Directories end with a slash. With no path it lists the working directory.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      path: {
+        type: "string",
+        description: "Optional relative directory to list. Defaults to the working directory.",
+      },
+    },
+    additionalProperties: false,
+  },
+  run: async (input) => {
+    const dir = typeof input.path === "string" && input.path !== "" ? input.path : ".";
+    const entries = await readdir(dir, { recursive: true, withFileTypes: true });
+    const files = entries.map((entry) => {
+      const rel = path.relative(dir, path.join(entry.parentPath, entry.name));
+      return entry.isDirectory() ? `${rel}/` : rel;
+    });
+    return JSON.stringify(files.sort());
+  },
 };
