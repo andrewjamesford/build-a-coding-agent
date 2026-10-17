@@ -1,0 +1,26 @@
+{
+  "name": "build-a-coding-agent",
+  "version": "1.0.0",
+  "description": "Companion code for the video \"Build a coding agent in TypeScript\"",
+  "license": "MIT",
+  "author": "Andrew Ford",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "start": "tsx main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "demo:reset": "tsx scripts/demo-reset.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.135.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

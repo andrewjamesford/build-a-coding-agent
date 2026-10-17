@@ -1,0 +1,11 @@
+{
+  "name": "how-coding-agents-work",
+  "version": "1.0.0",
+  "description": "Demo for video how coding agents work",
+  "license": "MIT",
+  "author": "Andrew Ford",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}

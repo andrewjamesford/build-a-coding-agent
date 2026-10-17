@@ -1,0 +1,2 @@
+Practice notes for the demo.
+This file is safe to lose. Use it to show the agent asking before a delete.
