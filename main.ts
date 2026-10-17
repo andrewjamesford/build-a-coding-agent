@@ -1,7 +1,7 @@
 // main.ts
 import Anthropic from "@anthropic-ai/sdk";
 import { createInterface } from "node:readline/promises";
-import { editFileTool, listFilesTool, readFileTool, type ToolDefinition } from "./tools.ts";
+import { editFileTool, listFilesTool, makeBashTool, readFileTool, type ToolDefinition } from "./tools.ts";
 
 type Message = Anthropic.Beta.BetaMessage;
 type MessageParam = Anthropic.Beta.BetaMessageParam;
@@ -116,7 +116,14 @@ async function main() {
     }
   };
 
-  const tools = [readFileTool, listFilesTool, editFileTool];
+  // Every bash command needs a "y" from you before it runs.
+  const confirm = async (command: string): Promise<boolean> => {
+    if (closed) return false;
+    const answer = await rl.question(`${colour.tool("bash")}: ${command}\n  Run it? [y/N] `);
+    return answer.trim().toLowerCase() === "y";
+  };
+
+  const tools = [readFileTool, listFilesTool, editFileTool, makeBashTool(confirm)];
   const agent = new Agent(client, getUserMessage, tools);
 
   try {
