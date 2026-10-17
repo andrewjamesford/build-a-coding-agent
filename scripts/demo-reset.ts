@@ -45,7 +45,15 @@ await cp(path.join(fixturesDir, "part-1"), target, { recursive: true });
 await cp(path.join(fixturesDir, "riddle.txt"), path.join(target, "riddle.txt"));
 await cp(path.join(fixturesDir, "notes.txt"), path.join(target, "notes.txt"));
 
+// Show paths under the home folder with ~, and quote any that contain spaces.
+// The ~ stays outside the quotes so the shell still expands it.
+function display(p: string): string {
+  const quote = (s: string) => (/\s/.test(s) ? JSON.stringify(s) : s);
+  const rel = path.relative(home, p);
+  return rel.startsWith("..") || path.isAbsolute(rel) ? quote(p) : `~/${quote(rel)}`;
+}
+
 console.log(`Reset ${target}`);
 console.log("Run the agent there with:");
 console.log("");
-console.log("  cd ~/agent-practice && npx tsx ~/Developer/demos/build-a-coding-agent/main.ts");
+console.log(`  cd ${display(target)} && npx tsx ${display(path.join(repoDir, "main.ts"))}`);

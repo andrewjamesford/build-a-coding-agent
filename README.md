@@ -28,7 +28,11 @@ Run `git checkout main` to get back to the latest code.
 
 You need Node 20.12 or later. The recursive `list_files` relies on `parentPath`, which arrived in 20.12. I recorded with Node 24.
 
+Clone the repo anywhere you like and install the dependencies:
+
 ```bash
+git clone https://github.com/andrewjamesford/build-a-coding-agent.git
+cd build-a-coding-agent
 npm install
 ```
 
@@ -50,11 +54,13 @@ For the demos, this script deletes and recreates `~/agent-practice` from the fil
 npm run demo:reset
 ```
 
-Then start the agent there. The second path is wherever you cloned this repo:
+It finishes by printing the command to start the agent there, with the path to your clone filled in. It looks like this, with `path/to/build-a-coding-agent` replaced by your own path:
 
 ```bash
-cd ~/agent-practice && npx tsx ~/Developer/demos/build-a-coding-agent/main.ts
+cd ~/agent-practice && npx tsx path/to/build-a-coding-agent/main.ts
 ```
+
+The first time, npx may ask to download tsx, because the practice folder has no `node_modules` of its own. Say yes, or skip the download by using the copy this repo installed: `path/to/build-a-coding-agent/node_modules/.bin/tsx`.
 
 Every `bash` command stops and asks `Run it? [y/N]`. Read the whole command before you type `y`. The time limit stops a command from hanging the loop, but it does nothing to stop a command that deletes or changes files. You are the safety check. Anything other than `y` declines, and Claude gets told you said no.
 
@@ -86,6 +92,10 @@ The 30-second timeout test is skipped by default because it takes 30 seconds. Ru
 ```bash
 SLOW=1 npm test
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ## Credits
 
