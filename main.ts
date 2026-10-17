@@ -1,21 +1,25 @@
 // main.ts
 import Anthropic from "@anthropic-ai/sdk";
 import { createInterface } from "node:readline/promises";
+import { type ToolDefinition } from "./tools.ts";
 
 type Message = Anthropic.Message;
 type MessageParam = Anthropic.MessageParam;
+type ToolResult = Anthropic.ToolResultBlockParam;
 
 const MODEL = "claude-opus-5-5";
 
 const colour = {
   you: (s: string) => `\u001b[94m${s}\u001b[0m`,
   claude: (s: string) => `\u001b[93m${s}\u001b[0m`,
+  tool: (s: string) => `\u001b[92m${s}\u001b[0m`,
 };
 
 class Agent {
   constructor(
     private client: Anthropic,
     private getUserMessage: () => Promise<string | null>,
+    private tools: ToolDefinition[],
   ) {}
 
   async run(): Promise<void> {
@@ -50,7 +54,28 @@ class Agent {
       model: MODEL,
       max_tokens: 16000,
       messages: conversation,
+      tools: this.tools.map((tool) => ({
+        name: tool.name,
+        description: tool.description,
+        input_schema: tool.inputSchema,
+      })),
     });
+  }
+
+  private async executeTool(id: string, name: string, input: unknown): Promise<ToolResult> {
+    const tool = this.tools.find((t) => t.name === name);
+    if (!tool) {
+      return { type: "tool_result", tool_use_id: id, content: "tool not found", is_error: true };
+    }
+
+    console.log(`${colour.tool("tool")}: ${name}(${JSON.stringify(input)})`);
+    try {
+      const output = await tool.run(input as Record<string, unknown>);
+      return { type: "tool_result", tool_use_id: id, content: output };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { type: "tool_result", tool_use_id: id, content: msg, is_error: true };
+    }
   }
 }
 
@@ -71,7 +96,8 @@ async function main() {
     }
   };
 
-  const agent = new Agent(client, getUserMessage);
+  const tools: ToolDefinition[] = [];
+  const agent = new Agent(client, getUserMessage, tools);
 
   try {
     await agent.run();
