@@ -1,7 +1,7 @@
 // main.ts
 import Anthropic from "@anthropic-ai/sdk";
 import { createInterface } from "node:readline/promises";
-import { type ToolDefinition } from "./tools.ts";
+import { readFileTool, type ToolDefinition } from "./tools.ts";
 
 type Message = Anthropic.Beta.BetaMessage;
 type MessageParam = Anthropic.Beta.BetaMessageParam;
@@ -26,10 +26,13 @@ class Agent {
     const conversation: MessageParam[] = [];
     console.log("Chat with Claude (use 'ctrl-c' to quit)");
 
+    let readUserInput = true;
     while (true) {
-      const userInput = await this.getUserMessage();
-      if (userInput === null) break;
-      conversation.push({ role: "user", content: userInput });
+      if (readUserInput) {
+        const userInput = await this.getUserMessage();
+        if (userInput === null) break;
+        conversation.push({ role: "user", content: userInput });
+      }
 
       const message = await this.runInference(conversation);
       // Append the full content, not just the text, so tool_use and
@@ -38,14 +41,28 @@ class Agent {
 
       if (message.stop_reason === "refusal") {
         console.log(colour.claude("Claude") + ": (declined to answer)");
+        readUserInput = true;
         continue;
       }
 
+      const toolResults: ToolResult[] = [];
       for (const block of message.content) {
         if (block.type === "text") {
           console.log(`${colour.claude("Claude")}: ${block.text}`);
+        } else if (block.type === "tool_use") {
+          toolResults.push(await this.executeTool(block.id, block.name, block.input));
         }
       }
+
+      if (toolResults.length === 0) {
+        readUserInput = true;
+        continue;
+      }
+
+      // Send every tool result back in a single user message,
+      // then call the model again without asking the user for input.
+      readUserInput = false;
+      conversation.push({ role: "user", content: toolResults });
     }
   }
 
@@ -99,7 +116,7 @@ async function main() {
     }
   };
 
-  const tools: ToolDefinition[] = [];
+  const tools = [readFileTool];
   const agent = new Agent(client, getUserMessage, tools);
 
   try {
