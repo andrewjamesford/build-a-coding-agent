@@ -1,5 +1,8 @@
 # Build a coding agent in TypeScript
 
+[Blog article - andrewford.co.nz](https://andrewford.co.nz/articles/building-a-coding-agent/)
+[YouTube Video](https://www.youtube.com/watch?v=4APoINtFWYs)
+
 Companion code for the video "Build a coding agent in TypeScript".
 
 This is a terminal chat with Claude that can read, list, edit and run code in the folder you start it from. It's about 330 lines across two files, `main.ts` and `tools.ts`, with no agent framework. The model only asks for a tool by name. This program decides whether to run it, runs it, and sends the result back.
